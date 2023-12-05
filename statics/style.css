@@ -1,0 +1,79 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@100&family=Special+Elite&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+  font-family: 'Major Mono Display', monospace;
+}
+body{
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(rgb(240, 240, 244), rgba(72, 140, 177, 0.999));
+}
+
+/* inloggnings sida style */
+.login{
+ color: rgb(7, 7, 110);
+ background-color: whitesmoke;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  margin: 5%;
+  margin-bottom: 5%;
+  min-width: fit-content;
+  max-height: fit-content;
+  box-shadow: 2px 2px 2px gray;
+  padding: 5%;
+  border-radius: 20rem 20rem 20rem 0px;
+ 
+}
+#button{
+  border:solid rgb(7, 7, 110);
+  padding: 0.3%;
+  margin: 2%;
+}
+
+/* index sidan */
+
+#loggaUt{
+  padding: 0.3%;
+  margin-bottom: 5%;
+  border-radius: 10rem 10rem 10rem 0px;
+}
+.hälsning,.användaren,.input{
+  background-color: whitesmoke;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  margin: 5%;
+  margin-bottom: 5%;
+  min-width: fit-content;
+  max-height: fit-content;
+  box-shadow: 2px 2px 2px gray;
+  padding: 2%;
+}
+.hälsning{
+  border-radius: 20rem 20rem 20rem 0px;
+}
+.användaren{
+  border-radius: 20rem 25rem 0rem 30rem;
+}
+.input{
+  border-radius: 10rem 10rem 10rem 0px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+.bild{
+  width: 20%;
+}
+.bilden{
+  position: absolute;
+  width: 10%;
+}
