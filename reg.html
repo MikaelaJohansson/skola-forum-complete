@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <main class="main-login">
+      <section class="container-reg">
+        <div class="box-reg">
+        
+        	<div class="login-reg">
+
+            <div class="regestrering">
+              <p>
+                <h1 class="head-reg">Registrering</h1>
+                <br>
+                Var god fyll i dinna uppgifter nedan.
+              </p>
+            </div>
+            
+            <img class="fjäril" src="fjäril.png" alt="fjäril" width="80px">
+           
+            <form action="anmäl" method="post">
+              <label for="username" style="font-size: 1.2rem;">Användarnamn</label>
+              <br>
+              <input type="text" name="username" size="30" placeholder="Användarnamn" id="username">
+              <br>
+              <label for="password" style="font-size: 1.2rem">Lösenord</label>
+              <br>
+              <input type="password" name="password" size="30"  placeholder="Lösenord" id="password">
+              <br>
+              <button class="login-button"  type="submit">Anmäl</button>
+            </form>
+
+            <button type="submit" onclick="medlem()" class="reg-button">Redan medlem</button>
+          </div>
+          
+        </div>
+        
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>

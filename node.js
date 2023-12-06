@@ -24,7 +24,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'statics')));
 
+
+
 app.get('/', function(request, response) {
+	response.sendFile(path.join(__dirname + '/reg.html'));
+});
+
+app.get('/loggin', function(request, response) {
 	response.sendFile(path.join(__dirname + '/loggin.html'));
 });
 
@@ -71,21 +77,21 @@ app.get("/index", function (req,res){
 
 
 
-// skickar över data till datorbasen från webbsida input
+
 app.post("/box", function (req, res) {
-  // kod för att validera input
+  
   if (!req.body.username) {
     res.status(400).send("username required!");
-    return; // avslutar metoden
+    return; 
   }
-  let fields = ["username", "name", "posts"]; // ändra eventuellt till namn på er egen databastabells kolumner
+  let fields = ["username", "name", "posts"];
   for (let key in req.body) {
     if (!fields.includes(key)) {
       res.status(400).send("Unknown field: " + key);
-      return; // avslutar metoden
+      return; 
     }
   }
-  // kod för att hantera anrop
+  
   let sql = `INSERT INTO post (username, name, posts)
   VALUES ('${req.body.username}', 
   '${req.body.name}',
@@ -101,22 +107,20 @@ app.post("/box", function (req, res) {
 
 // kollar inloggning och skickar vidare till index
 app.post('/auth', function(request, response) {
-	// Capture the input fields
+	
 	let username = request.body.username;
 	let password = request.body.password;
 
-	// Ensure the input fields exists and are not empty
+	
 	if (username && password) {
-		// Execute SQL query that'll select the account from the database based on the specified username and password
+		
 		connection.query('SELECT * FROM login WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-			// If there is an issue with the query, output the error
+			
 			if (error) throw error;
-			// If the account exists
+		
 			if (results.length > 0) {
-				// Authenticate the user
 				request.session.loggedin = true;
 				request.session.username = username;
-				// Redirect to home page
 				response.redirect('/index');
         return;
 			} else {
@@ -130,6 +134,74 @@ app.post('/auth', function(request, response) {
 	}
 });
 
+// MINNA API,ER
+const COLUMNS = ["id", "username", "name", "posts"]; 
 
+// visar min datorbas lista som heter users
+app.get("/post", function (req, res) {
+  let sql = "SELECT * FROM post";
+  let condition = createCondition(req.query); 
+  console.log(sql + condition); 
+ 
+  connection.query(sql + condition, function (err, result, fields) {
+    res.send(result);
+  });
+});
+let createCondition = function (query) {
+  console.log(query);
+  let output = " WHERE ";
+  for (let key in query) {
+    if (COLUMNS.includes(key)) {
+     
+      output += `${key}="${query[key]}" OR `;
+    }
+  }
+  if (output.length == 7) {
+    return ""; 
+  } else {
+    return output.substring(0, output.length - 4);
+  }
+};
+
+// api som gör att man kan söka i min datorbas users list id
+app.get("/post/:id", function (req, res) {
+  let sql = "SELECT * FROM post WHERE id=" + req.params.id;
+  console.log(sql);
+  
+  connection.query(sql, function (err, result, fields) {
+    if (result.length > 0) {
+      res.send(result);
+    } else {
+      res.sendStatus(404); 
+    }
+  });
+});
+
+
+// gör så att man kan lägga till en ny användare i datorbasens users list
+app.post("/anmäl", function (req, res) {
+  if (!req.body.username) {
+    res.status(400).send("username required!");
+    return; 
+  }
+  let fields = ["username", "password"]; 
+  for (let key in req.body) {
+    if (!fields.includes(key)) {
+      res.status(400).send("Unknown field: " + key);
+      return; 
+    }
+  }
+ 
+  let sql = `INSERT INTO login (username, password)
+    VALUES ('${req.body.username}', 
+    '${req.body.password}');
+    SELECT LAST_INSERT_ID();`; 
+  console.log(sql);
+
+  connection.query(sql,function(err,result,fields){
+    if (err) throw err;
+  })
+ 
+});
 
 app.listen(3000);
