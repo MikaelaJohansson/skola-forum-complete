@@ -19,14 +19,19 @@ app.use(session({
 	resave: true,
 	saveUninitialized: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'statics')));
 
-
 app.get('/', function(request, response) {
 	response.sendFile(path.join(__dirname + '/loggin.html'));
 });
+
+
+
+
+
 
 // skriver ut databasen till html sidan
 app.get("/index", function (req,res){
@@ -41,17 +46,17 @@ app.get("/index", function (req,res){
       let output = htmlArray[0]; 
      
       for (let key in result[0]){
-        output += `<th>${key}</th><br><br>`;
+        output += `<th>${key}</th>`;
       }
 
       output += htmlArray[1]; 
 
       for (let user of result){
-        output += "<tr><br><br>";
+        output += "<tr>";
         for (key in user){
-          output += `<td>${user[key]}</td><br><br>`;  
+          output += `<td><br>${user[key]}<br></td>`;  
         }
-        output += "</tr><br><br>";
+        output += "</tr>";
       }
     
       output += htmlArray[2]; 

@@ -7,32 +7,30 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <main class="main">
+    <main class="main-login">
       <section class="container">
         <div class="box">
-          
-          <h1>Välkommen</h1>
-
+        
         	<div class="login">
-            <h1>Login</h1>
+            <h1 class="head">Login</h1>
+            <img class="fjäril" src="fjäril.png" alt="fjäril" width="80px">
             <form action="/auth" method="post">
               <label for="username">
                 <!-- font awesome icon -->
                 <i class="fas fa-user"></i>
               </label>
-              <input type="text" name="username" placeholder="Username" id="username" required>
+              <input type="text" name="username" size="30" placeholder="Username" id="username" required>
               <label for="password">
                 <i class="fas fa-lock"></i>
               </label>
-              <input type="password" name="password" placeholder="Password" id="password" required>
-              <input type="submit" value="Login">
+              <input type="password" name="password" size="30" placeholder="Password" id="password" required>
+              <br>
+              <button class="login-button"  type="submit">Login</button>
             </form>
           </div>
-
-      
-
         </div>
       </section>
     </main>
+    <script src="script.js"></script>
   </body>
 </html>

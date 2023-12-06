@@ -7,17 +7,17 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+    <div class="Välkommen">
+      <img src="fjäril.png" alt="fjäril" width="100px" >
+      <h1>Välkommen</h1>
+      <br>
+      <p>
+        Vad kul att du tittar in. Var god och håll en god ton. <br>
+         Skriv järna ett inlägg och medela att du är här.
+      </p>
+   </div>
     <main class="main">
       <section class="container">
-
-        <div class="Välkommen">
-         
-          <h1>Välkommen ***NAMN*** </h1>
-         <p>Vad kul att du tittar in i gen. var god och håll god ton
-          till våra forum medlemar. Skrib järnma ett inlägg och medela att du är här.
-         </p>
-        </div>
-
         <div class="commenty-box">
           <form action="/box" method="post">
             <label for="username">Användarnamn:</label>
@@ -32,16 +32,23 @@
             <br>
             <textarea name="posts" id="posts" cols="30" rows="10"></textarea>
             <br>
-            <button type="submit">send</button>
+            <button class="button" type="submit">Skicka</button>
           </form>
+        </div>
+
+        <div class="inläggen">
           <table>
             <tr>
               ***NODE***
             </tr>
               ***NODE***
           </table>
-        </div>    
+        </div>
+
+       
+        <button class="loggaUt" onclick="formel()" type="submit">Loga ut</button>    
       </section>
     </main>
+    <script src="script.js"></script>
   </body>
 </html>
