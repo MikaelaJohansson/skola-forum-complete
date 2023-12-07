@@ -137,7 +137,7 @@ app.post('/auth', function(request, response) {
 // MINNA API,ER
 const COLUMNS = ["id", "username", "name", "posts"]; 
 
-// visar min datorbas lista som heter users
+// visar min datorbas lista 
 app.get("/post", function (req, res) {
   let sql = "SELECT * FROM post";
   let condition = createCondition(req.query); 
@@ -163,7 +163,7 @@ let createCondition = function (query) {
   }
 };
 
-// api som gör att man kan söka i min datorbas users list id
+// api som gör att man kan söka i min datorbas 
 app.get("/post/:id", function (req, res) {
   let sql = "SELECT * FROM post WHERE id=" + req.params.id;
   console.log(sql);
@@ -178,8 +178,8 @@ app.get("/post/:id", function (req, res) {
 });
 
 
-// gör så att man kan lägga till en ny användare i datorbasens users list
-app.post("/anmäl", function (req, res) {
+// gör så att man kan lägga till en ny användare i datorbasens
+app.post("/login", function (req, res) {
   if (!req.body.username) {
     res.status(400).send("username required!");
     return; 
@@ -199,7 +199,11 @@ app.post("/anmäl", function (req, res) {
   console.log(sql);
 
   connection.query(sql,function(err,result,fields){
-    if (err) throw err;
+    if (err){
+      throw err;
+    }else{
+      res.redirect('/loggin');
+    } 
   })
  
 });

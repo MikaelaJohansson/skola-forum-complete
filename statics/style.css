@@ -72,8 +72,8 @@ body{
 .head{
   display: inline;
   position: absolute;
-  top: 20%;
-  left: 40%;
+  top: 24%;
+  left: 32%;
 }
 .login-button{
   border:solid rgba(121, 167, 192, 0.999);
