@@ -24,6 +24,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'statics')));
 
+const crypto = require("crypto"); //INSTALLERA MED "npm install crypto" I KOMMANDOTOLKEN
+function hash(data) {
+  const hash = crypto.createHash("sha256");
+  hash.update(data);
+  return hash.digest("hex");
+}
+
+
+
+
+
+
+
+
 
 
 app.get('/', function(request, response) {
@@ -33,9 +47,6 @@ app.get('/', function(request, response) {
 app.get('/loggin', function(request, response) {
 	response.sendFile(path.join(__dirname + '/loggin.html'));
 });
-
-
-
 
 
 
@@ -75,9 +86,6 @@ app.get("/index", function (req,res){
 
 
 
-
-
-
 app.post("/box", function (req, res) {
   
   if (!req.body.username) {
@@ -105,34 +113,34 @@ app.post("/box", function (req, res) {
 
 
 
-// kollar inloggning och skickar vidare till index
-app.post('/auth', function(request, response) {
-	
-	let username = request.body.username;
-	let password = request.body.password;
+// kollar inloggning och skickar vidare till index med hashat lösen
+const jwt = require("jsonwebtoken"); // installera med "npm install jsonwebtoken"
+app.post("/auth", function (req, res) {
+  console.log(req.body);
+  if (!(req.body && req.body.username && req.body.password)) {
+    // om efterfrågad data saknas i request
+    res.sendStatus(400);
+    return;
+  }
+  let sql = `SELECT * FROM login WHERE username='${req.body.username}'`;
 
-	
-	if (username && password) {
-		
-		connection.query('SELECT * FROM login WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-			
-			if (error) throw error;
-		
-			if (results.length > 0) {
-				request.session.loggedin = true;
-				request.session.username = username;
-				response.redirect('/index');
-        return;
-			} else {
-				response.send('Incorrect Username and/or Password!');
-			}			
-			response.end();
-		});
-	} else {
-		response.send('Please enter Username and Password!');
-		response.end();
-	}
+  connection.query(sql, function (err, result, fields) {
+    if (err) throw err;
+    let passwordHash = hash(req.body.password);
+    if (result[0].password == passwordHash) {
+      //Denna kod skapar en token att returnera till anroparen.
+      let payload = {
+        sub: result[0].username, //sub är obligatorisk
+      };
+      let token = jwt.sign(payload, "EnHemlighetSomIngenKanGissaXyz123%&/");
+      res.redirect("/index")
+    } else {
+      res.sendStatus(401);
+    }
+  });
 });
+
+
 
 // MINNA API,ER
 const COLUMNS = ["id", "username", "name", "posts"]; 
@@ -142,10 +150,11 @@ app.get("/post", function (req, res) {
   let sql = "SELECT * FROM post";
   let condition = createCondition(req.query); 
   console.log(sql + condition); 
- 
+
   connection.query(sql + condition, function (err, result, fields) {
     res.send(result);
   });
+
 });
 let createCondition = function (query) {
   console.log(query);
@@ -178,34 +187,36 @@ app.get("/post/:id", function (req, res) {
 });
 
 
-// gör så att man kan lägga till en ny användare i datorbasens
+// gör så att man kan lägga till en ny användare i datorbasens hashat
 app.post("/login", function (req, res) {
-  
-  if (isValidUserData(req.body)) {
-    let sql = `INSERT INTO login (username, password)
-    VALUES ('${req.body.username}', 
-    '${req.body.password}');
-    SELECT LAST_INSERT_ID();`; 
-    console.log(sql);
-
-    connection.query(sql, function (err, result, fields) {
-      if (err) {
-        console.log(err);
-        res.status(500).send("Fel i databasanropet!");
-        throw err;
-      }
-      
-      console.log(result);
-      let output = {
-        id: result[0].insertId,
-        username: req.body.username,
-        password: req.body.password,
-      };
-      res.redirect('/loggin');
-    });
-  } else {
-    res.status(422).send("username required!"); 
+  if (!req.body.username) {
+    res.status(400).send("username required!");
+    return;
   }
+  let fields = [ "username","password"]; // ändra eventuellt till namn på er egen databastabells kolumner
+  for (let key in req.body) {
+    if (!fields.includes(key)) {
+      res.status(400).send("Unknown field: " + key);
+      return;
+    }
+  }
+  // OBS: näst sista raden i SQL-satsen står det hash(req.body.passwd) istället för req.body.passwd
+  // Det hashade lösenordet kan ha över 50 tecken, så använd t.ex. typen VARCHAR(100) i databasen, annars riskerar det hashade lösenordet att trunkeras (klippas av i slutet)
+  let sql = `INSERT INTO login (username, password)
+    VALUES ('${req.body.username}', 
+    '${hash(req.body.password)}');
+    SELECT LAST_INSERT_ID();`; // OBS! hash(req.body.password) i raden ovan!
+  console.log(sql);
+
+  connection.query(sql, function (err, result, fields) {
+    if (err) throw err;
+    console.log(result);
+    let output = {
+      id: result[0].insertId,
+      username: req.body.username,
+    }; // OBS: bäst att INTE returnera lösenordet
+    res.redirect('/loggin');
+  });
 });
 
 // kontrollera att användardata finns
@@ -215,10 +226,8 @@ function isValidUserData(body) {
 
 // put rout för att ändra i datorbasen
 app.put("/post/:id", function (req, res) {
-  //kod här för att hantera anrop…
-  // kolla först att all data som ska finnas finns i request-body
+  
   if (!(req.body && req.body.username && req.body.name && req.body.posts)) {
-    // om data saknas i body
     res.sendStatus(400);
     return;
   }
@@ -228,10 +237,8 @@ app.put("/post/:id", function (req, res) {
 
   connection.query(sql, function (err, result, fields) {
     if (err) {
-      throw err;
-      //kod här för felhantering, skicka felmeddelande osv.
+      throw err;    
     } else {
-      // meddela klienten att request har processats OK
       res.sendStatus(200);
     }
   });
