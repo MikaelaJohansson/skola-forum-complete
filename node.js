@@ -137,7 +137,7 @@ app.post('/auth', function(request, response) {
 // MINNA API,ER
 const COLUMNS = ["id", "username", "name", "posts"]; 
 
-// visar min datorbas lista 
+// api visar min datorbas lista 
 app.get("/post", function (req, res) {
   let sql = "SELECT * FROM post";
   let condition = createCondition(req.query); 
@@ -180,32 +180,63 @@ app.get("/post/:id", function (req, res) {
 
 // gör så att man kan lägga till en ny användare i datorbasens
 app.post("/login", function (req, res) {
-  if (!req.body.username) {
-    res.status(400).send("username required!");
-    return; 
-  }
-  let fields = ["username", "password"]; 
-  for (let key in req.body) {
-    if (!fields.includes(key)) {
-      res.status(400).send("Unknown field: " + key);
-      return; 
-    }
-  }
- 
-  let sql = `INSERT INTO login (username, password)
+  
+  if (isValidUserData(req.body)) {
+    let sql = `INSERT INTO login (username, password)
     VALUES ('${req.body.username}', 
     '${req.body.password}');
     SELECT LAST_INSERT_ID();`; 
-  console.log(sql);
+    console.log(sql);
 
-  connection.query(sql,function(err,result,fields){
-    if (err){
-      throw err;
-    }else{
+    connection.query(sql, function (err, result, fields) {
+      if (err) {
+        console.log(err);
+        res.status(500).send("Fel i databasanropet!");
+        throw err;
+      }
+      
+      console.log(result);
+      let output = {
+        id: result[0].insertId,
+        username: req.body.username,
+        password: req.body.password,
+      };
       res.redirect('/loggin');
-    } 
-  })
- 
+    });
+  } else {
+    res.status(422).send("username required!"); 
+  }
 });
+
+// kontrollera att användardata finns
+function isValidUserData(body) {
+  return body && body.username; 
+}
+
+// put rout för att ändra i datorbasen
+app.put("/post/:id", function (req, res) {
+  //kod här för att hantera anrop…
+  // kolla först att all data som ska finnas finns i request-body
+  if (!(req.body && req.body.username && req.body.name && req.body.posts)) {
+    // om data saknas i body
+    res.sendStatus(400);
+    return;
+  }
+  let sql = `UPDATE post 
+        SET username = '${req.body.username}', name = '${req.body.name}', posts = '${req.body.posts}'
+        WHERE id = ${req.params.id}`;
+
+  connection.query(sql, function (err, result, fields) {
+    if (err) {
+      throw err;
+      //kod här för felhantering, skicka felmeddelande osv.
+    } else {
+      // meddela klienten att request har processats OK
+      res.sendStatus(200);
+    }
+  });
+});
+
+
 
 app.listen(3000);
