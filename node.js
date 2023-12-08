@@ -1,9 +1,12 @@
+// här lägger jag minna grund inställningar och inporterar de paket jag behöver
+
 const mysql = require('mysql');
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
 let fs = require("fs");
 
+// conectar med min datorbas till min lista forum
 const connection = mysql.createConnection({
   host: "localhost", 
   user: "root", 
@@ -24,7 +27,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'statics')));
 
-const crypto = require("crypto"); //INSTALLERA MED "npm install crypto" I KOMMANDOTOLKEN
+// möjligör att jag kan kryptera mina lösenord
+const crypto = require("crypto"); 
 function hash(data) {
   const hash = crypto.createHash("sha256");
   hash.update(data);
@@ -35,22 +39,18 @@ function hash(data) {
 
 
 
+// här börjar coden för mitt projekt
 
-
-
-
-
+// hämtar minna html sidor som jag behöver
 app.get('/', function(request, response) {
 	response.sendFile(path.join(__dirname + '/reg.html'));
 });
-
 app.get('/loggin', function(request, response) {
 	response.sendFile(path.join(__dirname + '/loggin.html'));
 });
 
 
-
-// skriver ut databasen till html sidan
+// skriver ut databasens post inlägg till html sida, längst ned, efter att användare skripver i input
 app.get("/index", function (req,res){
  
   connection.query("select * from post", function (err, result){
@@ -74,18 +74,15 @@ app.get("/index", function (req,res){
           output += `<td><br>${user[key]}<br></td>`;  
         }
         output += "</tr>";
-      }
-    
+      }   
       output += htmlArray[2]; 
-      
-      
       res.send(output);
     })     
   })      
 })
 
 
-
+// stoppar i minna värden från användaren och förvarar i min datorbas lista post
 app.post("/box", function (req, res) {
   
   if (!req.body.username) {
@@ -114,26 +111,26 @@ app.post("/box", function (req, res) {
 
 
 // kollar inloggning och skickar vidare till index med hashat lösen
-const jwt = require("jsonwebtoken"); // installera med "npm install jsonwebtoken"
+const jwt = require("jsonwebtoken"); 
 app.post("/auth", function (req, res) {
   console.log(req.body);
   if (!(req.body && req.body.username && req.body.password)) {
-    // om efterfrågad data saknas i request
     res.sendStatus(400);
     return;
+  }else{
+    res.redirect("/index")
   }
   let sql = `SELECT * FROM login WHERE username='${req.body.username}'`;
-
+//  ska skapa token men kan ej få det att fungera, det fungerade en dag sedan ändrade jag något och nu funkar det inte,vet ej varför
   connection.query(sql, function (err, result, fields) {
     if (err) throw err;
     let passwordHash = hash(req.body.password);
     if (result[0].password == passwordHash) {
-      //Denna kod skapar en token att returnera till anroparen.
+      
       let payload = {
-        sub: result[0].username, //sub är obligatorisk
+        sub: result[0].username, 
       };
       let token = jwt.sign(payload, "EnHemlighetSomIngenKanGissaXyz123%&/");
-      res.redirect("/index")
     } else {
       res.sendStatus(401);
     }
@@ -141,11 +138,9 @@ app.post("/auth", function (req, res) {
 });
 
 
-
-// MINNA API,ER
 const COLUMNS = ["id", "username", "name", "posts"]; 
 
-// api visar min datorbas lista 
+// api get, visar min datorbas lista post
 app.get("/post", function (req, res) {
   let sql = "SELECT * FROM post";
   let condition = createCondition(req.query); 
@@ -172,7 +167,7 @@ let createCondition = function (query) {
   }
 };
 
-// api som gör att man kan söka i min datorbas 
+// api som gör att man kan söka i min datorbas lista post via id
 app.get("/post/:id", function (req, res) {
   let sql = "SELECT * FROM post WHERE id=" + req.params.id;
   console.log(sql);
@@ -187,25 +182,23 @@ app.get("/post/:id", function (req, res) {
 });
 
 
-// gör så att man kan lägga till en ny användare i datorbasens hashat
+// gör så att man kan lägga till en ny användare i datorbasens med hashat lösen
 app.post("/login", function (req, res) {
   if (!req.body.username) {
     res.status(400).send("username required!");
     return;
   }
-  let fields = [ "username","password"]; // ändra eventuellt till namn på er egen databastabells kolumner
+  let fields = [ "username","password"]; 
   for (let key in req.body) {
     if (!fields.includes(key)) {
       res.status(400).send("Unknown field: " + key);
       return;
     }
   }
-  // OBS: näst sista raden i SQL-satsen står det hash(req.body.passwd) istället för req.body.passwd
-  // Det hashade lösenordet kan ha över 50 tecken, så använd t.ex. typen VARCHAR(100) i databasen, annars riskerar det hashade lösenordet att trunkeras (klippas av i slutet)
   let sql = `INSERT INTO login (username, password)
     VALUES ('${req.body.username}', 
     '${hash(req.body.password)}');
-    SELECT LAST_INSERT_ID();`; // OBS! hash(req.body.password) i raden ovan!
+    SELECT LAST_INSERT_ID();`; 
   console.log(sql);
 
   connection.query(sql, function (err, result, fields) {
@@ -214,7 +207,7 @@ app.post("/login", function (req, res) {
     let output = {
       id: result[0].insertId,
       username: req.body.username,
-    }; // OBS: bäst att INTE returnera lösenordet
+    }; 
     res.redirect('/loggin');
   });
 });
@@ -244,6 +237,5 @@ app.put("/post/:id", function (req, res) {
   });
 });
 
-
-
 app.listen(3000);
+
